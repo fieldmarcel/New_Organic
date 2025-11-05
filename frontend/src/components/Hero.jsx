@@ -220,7 +220,7 @@ const {id}= useParams();
         <div className="flex flex-col md:flex-row items-center gap-8">
           <div className="md:w-1/3 lg:w-1/4 relative">
             <motion.div
-              className="w-full rounded-2xl overflow-hidden relative shadow-xl"
+              className=" rounded-xl overflow-hidden relative shadow-xl"
               whileHover={{ scale: 1.03 }}
             >
               <img
@@ -248,7 +248,7 @@ const {id}= useParams();
             </motion.div>
 
             <motion.h2
-              className="text-2xl md:text-3xl font-margarine text-gray-800 mb-4"
+              className="text-xl md:text-xl font-margarine text-gray-800 mb-4"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.6, delay: 1.6 }}

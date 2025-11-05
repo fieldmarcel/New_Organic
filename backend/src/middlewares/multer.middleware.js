@@ -1,18 +1,16 @@
-import multer from "multer"
+import multer from "multer";
+import { CloudinaryStorage } from "multer-storage-cloudinary";
+import cloudinary from "../utils/cloudinary.js";
+const storage = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    folder: "recipes",
+    allowed_formats: ["jpg", "png", "jpeg", "webp"],
+  },
+});
 
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-      cb(null, './public')
-    },
-    filename:  (req, file, cb)=> {
-   
-        cb(null, file.originalname)
+export const upload = multer({ storage });
 
-}
-  
-})
-  
-  export const upload = multer({ storage })
 
   
 //Multer as Middleware: Multer is used to handle and temporarily store the file, often on disk or in memory.

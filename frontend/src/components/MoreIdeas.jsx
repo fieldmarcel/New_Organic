@@ -25,7 +25,7 @@ const MoreIdeas = () => {
         setRecipes(data);
       } catch (err) {
         setError(err.message);
-        console.error("Error fetching recipes:", err);
+        console.error("Error fetching More Ideas recipes:", err);
       } finally {
         setIsLoading(false);
       }

@@ -1,28 +1,43 @@
 import { Recipe } from "../models/singleRecipemodel.js";
 
 const createSingleRecipePage = async (req, res) => {
-  const {
-    subCategory,
-    title,
-    rating,
-    description,
-    cookTime,
-    readyIn,
-    serving,
-    ingredients,
-    nutrition,
-    cuisine,
-    mealType,
-    steps,
-    image,
-  } = req.body;
-  const userId = req.user ? req.user.userId : null; 
-
-  console.log("User ID:",userId)
-  console.log("req.body :",req.body)
-
   try {
-    // Validate required fields
+    const userId = req.user ? req.user.userId : null;
+    const imageUrl = req.file?.path; // Cloudinary uploaded URL ✅
+
+    console.log("Uploaded Image URL:", imageUrl);
+    console.log("User ID:", userId);
+    console.log("req.body:", req.body);
+
+    let {
+      subCategory,
+      title,
+      rating,
+      description,
+      cookTime,
+      readyIn,
+      serving,
+      ingredients,
+      nutrition,
+      cuisine,
+      mealType,
+      steps,
+    } = req.body;
+
+    // ✅ Convert data formats (important!)
+    if (typeof ingredients === "string") {
+      ingredients = ingredients.split(",").map((i) => i.trim());
+    }
+
+    if (typeof steps === "string") {
+      steps = steps.split("\n").map((s) => s.trim());
+    }
+
+    if (typeof nutrition === "string") {
+      nutrition = JSON.parse(nutrition);
+    }
+
+    // ✅ Validate required fields
     if (
       !subCategory ||
       !title ||
@@ -30,14 +45,14 @@ const createSingleRecipePage = async (req, res) => {
       !description ||
       !cookTime ||
       !serving ||
-      !ingredients ||
+      !ingredients?.length ||
       !nutrition ||
       !cuisine ||
       !mealType ||
-      !steps ||
-      !image
+      !steps?.length ||
+      !imageUrl
     ) {
-      return res.status(400).json({ error: "All fields are required" });
+      return res.status(400).json({ error: "All fields including image are required." });
     }
 
     const recipe = await Recipe.create({
@@ -53,23 +68,28 @@ const createSingleRecipePage = async (req, res) => {
       cuisine,
       mealType,
       steps,
-      image,
+      image: imageUrl, // ✅ Store uploaded Cloudinary URL
       userId,
       isPrePopulated: !userId,
     });
 
     return res.status(201).json({
-      message: "Recipe created successfully",
+      success: true,
+      message: "Recipe created successfully ✅",
       recipe,
     });
+
   } catch (error) {
-    console.error("Error creating recipe:", error.message);
+    console.error("Error creating recipe:", error);
     return res.status(500).json({
+      success: false,
       message: "Error creating recipe",
       error: error.message,
     });
   }
 };
+
+
 
 
 const getRecipe = async (req, res) => {

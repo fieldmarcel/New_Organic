@@ -75,7 +75,7 @@ const handleLogout = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen ">
       {/* Cover Image and Profile Info Section */}
       <div className="relative h-80 overflow-hidden">
         <img
