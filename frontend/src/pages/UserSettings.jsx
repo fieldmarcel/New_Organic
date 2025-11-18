@@ -1,175 +1,257 @@
-// import React, { useState } from "react";
-// import { User, Bell, Lock, Globe, HelpCircle, LogOut } from "lucide-react";
+import React, { useState } from "react";
+import { User, Camera, Mail, MapPin, Save, X } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
 
+function UserSettings() {
+  const [activeTab, setActiveTab] = useState("profile");
+  const [formData, setFormData] = useState({
+    firstName: "Jane",
+    lastName: "Smith",
+    email: "jane.smith@example.com",
+    alternateEmail: "jane.alternate@example.com",
+    bio: "I'm a food enthusiast passionate about discovering and sharing amazing recipes from around the world.",
+    location: "San Francisco, CA"
+  });
 
-// function UserSettings() {
-//   const [activeTab, setActiveTab] = useState("profile");
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
+  };
 
-//   const renderContent = () => {
-//     switch (activeTab) {
-//       case 'profile':
-//         return <ProfileSettings />;
-      
-      
-//     }
-//   };
+  const handleSave = () => {
+    console.log("Saving changes:", formData);
+    // Add your save logic here
+  };
 
-//   return (
-//     <div className="flex min-h-screen bg-gray-50">
-//       <div className="w-64 bg-white shadow-sm p-6 space-y-8">
-//         <div className="flex flex-col items-center">
-//           <div className="h-24 w-24 rounded-full bg-indigo-100 flex items-center justify-center text-green-600">
-//             <User size={48} />
-//           </div>
-//           <h2 className="mt-4 font-semibold text-lg">Guest</h2>
-//           <p className="text-gray-500 text-sm">guest@gmail.com</p>
-//         </div>
+  const renderContent = () => {
+    switch (activeTab) {
+      case 'profile':
+        return <ProfileSettings formData={formData} handleChange={handleChange} handleSave={handleSave} />;
+      default:
+        return <ProfileSettings formData={formData} handleChange={handleChange} handleSave={handleSave} />;
+    }
+  };
 
-//         <nav className="mt-8">
-//           <ul className="space-y-2">
-//             <li
-//               className={`px-4 py-3 rounded-lg cursor-pointer flex items-center space-x-3 ${
-//                 activeTab === "profile"
-//                   ? "bg-indigo-50 text-green-600"
-//                   : "hover:bg-gray-100"
-//               }`}
-//               onClick={() => setActiveTab("profile")}
-//             >
-//               <User size={18} />
-//               <span>Profile</span>
-//             </li>
-//           </ul>
-//         </nav>
-//       </div>
-
-//       <div className="flex-1 p-8">{renderContent()}</div>
-//       <div className="flex-1 p-8">
-//         {renderContent()}
-//       </div>
-//     </div>
-//   );
-// }
-
-// function ProfileSettings() {
-//   return (
-//     <div className="max-w-2xl">
-//       <h1 className="text-2xl font-bold text-gray-800 mb-6">
-//         Profile Settings
-//       </h1>
-
-//       <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
-//         <div className="flex items-center space-x-4 mb-6">
-//           <div className="h-20 w-20 rounded-full bg-indigo-100 flex items-center justify-center text-green-500">
-//             <User size={40} />
-//           </div>
-//           <div>
-//             <h2 className="font-semibold">Profile Picture</h2>
-//             <div className="flex space-x-3 mt-2">
-//               <button className="px-4 py-2 bg-indigo-50 text-green-500 rounded-lg hover:bg-indigo-100">
-//                 Upload New
-//               </button>
-//               <button className="px-4 py-2 text-gray-500 hover:text-gray-700">
-//                 Remove
-//               </button>
-//             </div>
-//           </div>
-//         </div>
-
-//         <div className="space-y-6">
-//           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-//             <div>
-//               <label className="block text-sm font-medium text-gray-700 mb-1">
-//                 First Name
-//               </label>
-//               <input
-//                 type="text"
-//                 defaultValue="Jane"
-//                 className="w-full p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none"
-//               />
-//             </div>
-//             <div>
-//               <label className="block text-sm font-medium text-gray-700 mb-1">
-//                 Last Name
-//               </label>
-//               <input
-//                 type="text"
-//                 defaultValue="Smith"
-//                 className="w-full p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none"
-//               />
-//             </div>
-//           </div>
-
-//           <div>
-//             <label className="block text-sm font-medium text-gray-700 mb-1">
-//               Email
-//             </label>
-//             <input
-//               type="email"
-//               defaultValue="jane.smith@example.com"
-//               className="w-full p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none"
-//             />
-//           </div>
-
-//           <div>
-//             <label className="block text-sm font-medium text-gray-700 mb-1">
-//               Bio
-//             </label>
-//             <textarea
-//               defaultValue="I'm a UX designer passionate about creating intuitive digital experiences."
-//               className="w-full p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none h-24"
-//             />
-//           </div>
-//         </div>
-//       </div>
-
-//       <div className="bg-white rounded-xl shadow-sm p-6">
-//         <h2 className="font-semibold mb-4">Contact Information</h2>
-//         <div className="space-y-6">
-//           <div>
-//             <label className="block text-sm font-medium text-gray-700 mb-1">
-//               Phone Number
-//             </label>
-//             <input
-//               type="tel"
-//               defaultValue="+1 (555) 123-4567"
-//               className="w-full p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none"
-//             />
-//           </div>
-
-//           <div>
-//             <label className="block text-sm font-medium text-gray-700 mb-1">
-//               Location
-//             </label>
-//             <input
-//               type="text"
-//               defaultValue="San Francisco, CA"
-//               className="w-full p-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none"
-//             />
-//           </div>
-//         </div>
-//       </div>
-
-//       <div className="mt-6 flex justify-end space-x-3">
-//         <button className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
-//           Cancel
-//         </button>
-//         <button className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
-//           Save Changes
-//         </button>
-//       </div>
-//     </div>
-//   );
-// }
-
-
-
-// export default UserSettings;
-import React from 'react'
-
-const UserSettings = () => {
   return (
-    <div>UserSettings</div>
-  )
+    <div className="min-h-screen bg-gradient-to-br from-green-100 via-green-100 to-green-100">
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          
+          {/* Sidebar */}
+          <div className="lg:col-span-4">
+            <Card className="rounded-3xl shadow-xl border-0 sticky top-8">
+              <CardContent className="p-8">
+                <div className="flex flex-col items-center">
+                  <div className="relative group">
+                    <div className="h-32 w-32 rounded-full bg-gradient-to-br from-white-400 via-white-400 to-teal-400 flex items-center justify-center text-white shadow-2xl">
+                      <User size={60} strokeWidth={2} />
+                    </div>
+                    <button className="absolute bottom-0 right-0 h-10 w-10 rounded-full bg-gradient-to-br from-green-600 to-emerald-600 flex items-center justify-center text-white shadow-lg hover:scale-110 transition-transform duration-300">
+                      <Camera size={18} />
+                    </button>
+                  </div>
+                  <h2 className="mt-6 font-black text-2xl text-gray-900">Guest User</h2>
+                  <p className="text-gray-500 text-sm mt-1 font-medium">guest@gmail.com</p>
+                </div>
+
+                <nav className="mt-8">
+                  <ul className="space-y-2">
+                    <li
+                      className={`px-5 py-4 rounded-2xl cursor-pointer flex items-center space-x-3 transition-all duration-300 ${
+                        activeTab === "profile"
+                          ? "bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow-xl shadow-green-200"
+                          : "hover:bg-gray-100 text-gray-700"
+                      }`}
+                      onClick={() => setActiveTab("profile")}
+                    >
+                      <User size={20} />
+                      <span className="font-semibold">Profile Settings</span>
+                    </li>
+                  </ul>
+                </nav>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Main Content */}
+          <div className="lg:col-span-8">
+            {renderContent()}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
 
-export default UserSettings
+function ProfileSettings({ formData, handleChange, handleSave }) {
+  return (
+    <div className="space-y-6">
+      <Card className="rounded-3xl shadow-xl border-0">
+        <CardContent className="p-8">
+          <div className="mb-8">
+            <h1 className="text-4xl font-black text-gray-900 mb-2">
+              Profile Settings
+            </h1>
+            <p className="text-gray-600 font-medium">Manage your personal information and preferences</p>
+          </div>
+
+          {/* Profile Picture Section */}
+          <div className="mb-8 p-6 bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl">
+            <div className="flex items-center space-x-6">
+              <div className="h-24 w-24 rounded-2xl bg-gradient-to-br from-green-400 to-emerald-400 flex items-center justify-center text-white shadow-xl">
+                <User size={48} />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-bold text-lg text-gray-900 mb-1">Profile Picture</h3>
+                <p className="text-sm text-gray-600 mb-3">JPG, PNG or GIF - Max size 5MB</p>
+                <div className="flex space-x-3">
+                  <Button className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300">
+                    Upload New
+                  </Button>
+                  <Button variant="outline" className="border-2 rounded-xl">
+                    Remove
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Form Fields */}
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <Label htmlFor="firstName" className="text-sm font-bold text-gray-700 mb-2">
+                  First Name
+                </Label>
+                <Input
+                  id="firstName"
+                  type="text"
+                  name="firstName"
+                  value={formData.firstName}
+                  onChange={handleChange}
+                  className="border-2 rounded-xl h-12 focus:ring-4 focus:ring-green-200 focus:border-green-500 transition-all duration-300"
+                />
+              </div>
+              <div>
+                <Label htmlFor="lastName" className="text-sm font-bold text-gray-700 mb-2">
+                  Last Name
+                </Label>
+                <Input
+                  id="lastName"
+                  type="text"
+                  name="lastName"
+                  value={formData.lastName}
+                  onChange={handleChange}
+                  className="border-2 rounded-xl h-12 focus:ring-4 focus:ring-green-200 focus:border-green-500 transition-all duration-300"
+                />
+              </div>
+            </div>
+
+            <div>
+              <Label htmlFor="email" className="text-sm font-bold text-gray-700 mb-2">
+                <div className="flex items-center gap-2">
+                  <Mail size={16} />
+                  Email Address
+                </div>
+              </Label>
+              <Input
+                id="email"
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                className="border-2 rounded-xl h-12 focus:ring-4 focus:ring-green-200 focus:border-green-500 transition-all duration-300"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="bio" className="text-sm font-bold text-gray-700 mb-2">
+                Bio
+              </Label>
+              <Textarea
+                id="bio"
+                name="bio"
+                value={formData.bio}
+                onChange={handleChange}
+                className="border-2 rounded-xl focus:ring-4 focus:ring-green-200 focus:border-green-500 transition-all duration-300 h-32 resize-none"
+              />
+              <p className="text-sm text-gray-500 mt-2 font-medium">Brief description for your profile (max 200 characters)</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Contact Information */}
+      <Card className="rounded-3xl shadow-xl border-0">
+        <CardContent className="p-8">
+          <div className="mb-6">
+            <h2 className="text-2xl font-black text-gray-900 mb-1">Contact Information</h2>
+            <p className="text-gray-600 font-medium">Update your contact details</p>
+          </div>
+          
+          <div className="space-y-6">
+            <div>
+              <Label htmlFor="alternateEmail" className="text-sm font-bold text-gray-700 mb-2">
+                <div className="flex items-center gap-2">
+                  <Mail size={16} />
+                  Alternate Email
+                </div>
+              </Label>
+              <Input
+                id="alternateEmail"
+                type="email"
+                name="alternateEmail"
+                value={formData.alternateEmail}
+                onChange={handleChange}
+                className="border-2 rounded-xl h-12 focus:ring-4 focus:ring-green-200 focus:border-green-500 transition-all duration-300"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="location" className="text-sm font-bold text-gray-700 mb-2">
+                <div className="flex items-center gap-2">
+                  <MapPin size={16} />
+                  Location
+                </div>
+              </Label>
+              <Input
+                id="location"
+                type="text"
+                name="location"
+                value={formData.location}
+                onChange={handleChange}
+                className="border-2 rounded-xl h-12 focus:ring-4 focus:ring-green-200 focus:border-green-500 transition-all duration-300"
+              />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Action Buttons */}
+      <div className="flex justify-end space-x-4">
+        <Button 
+          variant="outline" 
+          className="px-8 py-6 border-2 rounded-xl font-bold text-gray-700 flex items-center gap-2"
+        >
+          <X size={18} />
+          Cancel
+        </Button>
+        <Button 
+          onClick={handleSave}
+          className="px-8 py-6 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-xl shadow-xl hover:shadow-2xl hover:shadow-green-300 transition-all duration-300 transform hover:scale-105 font-bold flex items-center gap-2"
+        >
+          <Save size={18} />
+          Save Changes
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+export default UserSettings;

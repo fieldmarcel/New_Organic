@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState ,useRef} from "react";
 import { useParams } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import { Checkbox } from "@/components/ui/checkbox";
-
+import DynamicRatingStars from "./DynamicRatingStars.jsx";
+import StaticRating from "./StaticRating.jsx";
 import { 
   Clock, Users, Star, ChefHat, Check, Download, Share2, 
   Bookmark, BookMarked, MoreVertical, User, Heart, Flame, Droplets, Wheat, Timer, Utensils
@@ -19,6 +20,9 @@ import Comments from "./Comments";
 import { Link } from "react-router-dom";
 
 const Recipe = () => {
+const dataString= localStorage.getItem("data");
+  const loggedUser= dataString ? JSON.parse(dataString):null;
+
   const { id } = useParams();
   const [recipe, setRecipe] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -26,7 +30,19 @@ const Recipe = () => {
   const [checkedIngredients, setCheckedIngredients] = useState([]);
   const [checkedSteps, setCheckedSteps] = useState([]);
   const [isBookmarked, setIsBookmarked] = useState(false);
+const [ratingInfo, setRatingInfo] = useState({
+        averageRating: 0,
+        ratingCount: 0,
+    });
+    const ratingSectionRef= useRef(null);
 
+const scrolltoRatingSection =()=>{
+
+if(ratingSectionRef.current){
+  ratingSectionRef.current?.scrollIntoView({behavior:"smooth"});
+
+}
+}
   const handlebookmark = async (e) => {
     e.preventDefault();
     try {
@@ -75,12 +91,25 @@ const Recipe = () => {
       }
     }
   }
-
+const handleRatingUpdate = ({ averageRating, ratingCount, userRating }) => {
+        setRatingInfo(prev => ({
+            ...prev,
+            averageRating: averageRating,
+            ratingCount: ratingCount,
+             initialUserRating: userRating  
+            // The DynamicRatingStars component will handle updating the userVote internally
+        }));
+    };
   useEffect(() => {
     const fetchData = async () => {
       try {
         const { data } = await axios.get(import.meta.env.VITE_BASE_URL + `/api/v1/recipes/${id}`);
-        setRecipe(data);
+     setRecipe(data.recipe);
+      setRatingInfo({
+        averageRating: data.averageRating,
+        ratingCount: data.ratingCount,
+        initialUserRating: data.userRating
+      });
       } catch (err) {
         setError("Error fetching recipe details");
       }
@@ -128,7 +157,10 @@ const Recipe = () => {
     </div>
   );
 
+
+
   const userName = recipe.userId ? recipe.userId.userName : "admin";
+
 
   return (
     <div className="min-h-screen ">
@@ -224,8 +256,13 @@ const Recipe = () => {
                     <Star className="w-5 h-5 text-amber-600" />
                   </div>
                   <div>
-                    <p className="text-xs text-slate-500 font-medium">Rating</p>
-                    <p className="text-lg font-bold text-slate-800">{recipe.rating} ⭐</p>
+                    <StaticRating 
+  averageRating={Number(ratingInfo.averageRating) || 0}
+  ratingCount={Number(ratingInfo.ratingCount) || 0}
+  onClick={scrolltoRatingSection}
+/>
+
+
                   </div>
                 </div>
 
@@ -390,11 +427,68 @@ const Recipe = () => {
           </div>
         </div>
 
-        {/* Comments Section */}
-        <div className=" ">
-          <Comments />
-        </div>
+ {/* Comments & Rating Section */}
+<div ref= {ratingSectionRef} className="relative bg-gradient-to-br from-white via-slate-50 to-white rounded-3xl shadow-xl p-8 mt-10 border border-slate-100 overflow-hidden">
+  
+  {/* Decorative background elements */}
+  <div className="absolute top-0 right-0 w-64 h-64 bg-purple-100 rounded-full blur-3xl opacity-20 -z-10" />
+  <div className="absolute bottom-0 left-0 w-48 h-48 bg-blue-100 rounded-full blur-3xl opacity-20 -z-10" />
+  
+  <div className="flex flex-col lg:flex-row justify-between gap-8 relative z-10">
+    
+    {/* Comments */}
+    <div className="flex-1">
+      <div className="flex items-center gap-3 mb-6">
+        <div className="w-1 h-8 bg-gradient-to-b from-blue-500 to-purple-500 rounded-full" />
+        <h3 className="text-2xl font-bold text-slate-900 tracking-tight">
+          Comments & Feedback
+        </h3>
       </div>
+      <Comments />
+    </div>
+
+    {/* Rating Box */}
+    <div className="relative flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm rounded-2xl p-8 w-full lg:w-96 shadow-lg border border-slate-200/60 lg:sticky lg:top-24 lg:self-start">
+      
+      {/* Decorative accent */}
+      <div className="absolute -top-3 -right-3 w-24 h-24 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full blur-2xl opacity-20" />
+      
+      {loggedUser && recipe?.userId?._id === loggedUser?.id ? (
+        <div className="flex flex-col items-center gap-3 py-4">
+          <div className="p-4 bg-red-50 rounded-full">
+            <svg 
+              className="w-8 h-8 text-red-500" 
+              fill="none" 
+              stroke="currentColor" 
+              viewBox="0 0 24 24"
+            >
+              <path 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                strokeWidth={2} 
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" 
+              />
+            </svg>
+          </div>
+          <span className="text-sm font-semibold text-red-600 text-center px-4 py-2 bg-red-50 border border-red-200 rounded-full">
+            You cannot rate your own recipe
+          </span>
+        </div>
+      ) : (
+        <DynamicRatingStars
+          recipeId={id}
+          currentAvgRating={Number(ratingInfo.averageRating) || 0}
+          ratingCount={Number(ratingInfo.ratingCount) || 1}
+          initialUserRating={Number(ratingInfo.initialUserRating) || 0}
+          onRatingUpdate={handleRatingUpdate}
+        />
+      )}
+    </div>
+  </div>
+</div>
+
+    </div>
+
     </div>
   );
 };

@@ -9,7 +9,7 @@ import axios from "axios";
 import { Link } from "react-router-dom";
 import { BookMarked, Bookmark } from "lucide-react";
 import toast from "react-hot-toast"; 
-
+import StaticRating from "./StaticRating";
 const CuisineSection = ({ title, subTitle, cuisine, className }) => {
   const [recipes, setRecipes] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -161,10 +161,14 @@ const CuisineSection = ({ title, subTitle, cuisine, className }) => {
                           <div className="mt-2 flex items-center text-sm text-gray-400">
                             <span className="flex items-center">
                               <span className="h-2 w-2 bg-green-400 rounded-full mr-2"></span>
-                              {recipe.time || recipe.cookTime || recipe.prepTime || "30 min"}
+                              { recipe.cookTime || recipe.readyIn || "30 min"}
                             </span>
                             <span className="mx-2">•</span>
-                            <span>{recipe.difficulty || recipe.level || "Medium"}</span>
+                            <span>{recipe.difficulty || "Medium"}</span>
+                            <StaticRating 
+  averageRating={Number(recipe.averageRating) || 0}
+  // ratingCount={Number(recipe.ratingCount) || 0}
+/>
                           </div>
                         </CardContent>
                       </div>

@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { AnimatedTooltip } from "../components/ui/Animated-tooltip";
 import { People } from "./ui/acertinity";
 import { Link,useParams } from "react-router-dom";
+import StaticRating from "./StaticRating";
 import axios from "axios";
 const Hero = () => {
 const {id}= useParams();
@@ -12,22 +13,23 @@ const {id}= useParams();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
-  useEffect(() => {
-    const fetchRecipe = async () => {
-      try {
-        const recipeId=  id  || "67bff003c0599fc44cbb07fa";
-        const response = await axios.get(import.meta.env.VITE_BASE_URL + `/api/v1/recipes/${recipeId}`);
-        setRecipe(response.data);
-      } catch (error) {
-        setError(error.message);
-      } finally {
-        setLoading(false);
-      }
-    };
 
-    fetchRecipe();
-  }, [id]);
+useEffect(() => {
 
+  const fetchRecipe = async () => {
+    try {
+      const recipeId = id ?? "67bff003c0599fc44cbb07fa";
+      const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/api/v1/recipes/${recipeId}`);
+      setRecipe(response.data.recipe);  
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchRecipe();
+}, [id]);
 
 
   useEffect(() => {
@@ -265,14 +267,16 @@ const {id}= useParams();
  {recipe.description
     ? recipe.description.split(" ").slice(0, 28).join(" ") + (recipe.description.split(" ").length > 28 ? "..." : "")
     : "No description available."}  </motion.p>
-
+<StaticRating 
+  averageRating={Number(recipe.averageRating) || 0}
+/>
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.6, delay: 2 }}
             >
               <Link
-                to={`/recipe/${recipe._id}`}
+                to={`/recipe/${recipe?._id}`}
                 className="group px-5 py-2 border-2 border-green-500 text-green-600 rounded-full font-medium inline-flex items-center gap-2 hover:bg-green-500 hover:text-white transition-all"
               >
                 See Recipe

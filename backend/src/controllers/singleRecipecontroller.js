@@ -1,4 +1,5 @@
 import { Recipe } from "../models/singleRecipemodel.js";
+import { Rating } from "../models/ratingModel.js";
 
 const createSingleRecipePage = async (req, res) => {
   try {
@@ -89,12 +90,12 @@ const createSingleRecipePage = async (req, res) => {
   }
 };
 
-
-
-
 const getRecipe = async (req, res) => {
   try {
    const {id}= req.params;
+
+const userId= req.user ? req.user.userId :null;
+
    if (!id) {
     return res.status(400).json({ error: "Recipe ID is missing" });
   }
@@ -102,8 +103,17 @@ const getRecipe = async (req, res) => {
    if (!recipe) {
     return res.status(404).json({ error: "Recipe not found" });
   }
+  let userRating=0;
+if(userId){
+  const existingRating = await Rating.findOne({recipeId:id,userId})
+  if(existingRating){
+    userRating= existingRating.value
+  }
+}
 
- return res.status(200).json(recipe);
+ return res.status(200).json({recipe ,success:true, averageRating: recipe.averageRating ||0, ratingCount:recipe.ratingCount ||0, userRating});
+
+
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch recipe" });
 
@@ -113,7 +123,7 @@ const getRecipe = async (req, res) => {
 const getAllRecipes= async(req,res)=>{
   try {
    
-    const recipes= await Recipe.find({},"title image rating")
+    const recipes= await Recipe.find({},"title image averageRating ratingCount")
     return res.status(200).json(recipes);
 
   } catch (error) {
@@ -123,7 +133,7 @@ const getAllRecipes= async(req,res)=>{
 const getFixedRecipes= async(req,res)=>{
   try {
     const limit = parseInt(req.query.limit) ||3;
-    const recipes= await Recipe.find({},"title image rating").limit(limit);
+    const recipes= await Recipe.find({},"title image  averageRating ratingCount" ).limit(limit);
     return res.status(200).json(recipes);
 
   } catch (error) {
@@ -166,7 +176,7 @@ const getCategoryRecipes= async(req,res)=>{
       return res.status(400).json({ error: "Category parameter is missing" });
     }
 
-    const recipes = await Recipe.find({subCategory: { $regex: subCategory, $options: "i" } });
+    const recipes = await Recipe.find({subCategory: { $regex: subCategory, $options: "i" } }," title image averageRating ratingCount");
         console.log("Category Recipes:",recipes);
     return res.status(200).json(recipes);
 

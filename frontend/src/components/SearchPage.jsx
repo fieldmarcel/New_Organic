@@ -184,6 +184,7 @@ const SearchPage = () => {
                       rating={item.rating}
                       image={item.image}
                       readyIn={item.readyIn}
+                      averageRating={item.averageRating}
                     />
                   </div>
                 </div>

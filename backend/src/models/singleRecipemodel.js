@@ -22,7 +22,10 @@ const recipeSchema = new mongoose.Schema(
 
     subCategory: { type: String, index: true },
     title: { type: String, required: true, index: true },
-    rating: { type: Number, required: true, min: 0, max: 5, index: true },
+    
+   averageRating: { type: Number, default: 0 },  // dynamically updated
+   ratingCount: { type: Number, default: 0 },  
+
     description: { type: String, index: true },
     cookTime: { type: Number, required: true, index: true },
     readyIn: { type: Number, index: true },

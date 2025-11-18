@@ -2,7 +2,8 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils"; 
-
+import axios from "axios";
+import StaticRating from "./StaticRating";
 const MoreIdeas = () => {
   const [recipes, setRecipes] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -91,10 +92,19 @@ const MoreIdeas = () => {
                   style={{ filter: "brightness(95%)" }}
                 />
               </div>
-              <CardContent className="p-3 md:p-4">
+              <CardContent className="p-3 md:p-4 flex flex-row justify-between">
                 <h3 className="text-base md:text-lg font-medium text-gray-800 line-clamp-1">
                   {recipe.title}
                 </h3>
+                        <div>
+                    <StaticRating 
+  averageRating={Number(recipe.averageRating) || 0}
+  ratingCount={Number(recipe.ratingCount) || 0}
+/>
+
+
+                  </div>
+
               </CardContent>
             </Card>
           </Link>
