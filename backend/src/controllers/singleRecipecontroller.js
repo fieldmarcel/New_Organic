@@ -42,7 +42,6 @@ const createSingleRecipePage = async (req, res) => {
     if (
       !subCategory ||
       !title ||
-      !rating ||
       !description ||
       !cookTime ||
       !serving ||
@@ -59,7 +58,6 @@ const createSingleRecipePage = async (req, res) => {
     const recipe = await Recipe.create({
       subCategory,
       title,
-      rating,
       description,
       cookTime,
       readyIn,
@@ -89,7 +87,30 @@ const createSingleRecipePage = async (req, res) => {
     });
   }
 };
+const deleteSingleRcipe= async(req,res)=>{
+  try {
+    const userId= req.user ?req.user.userId :null;
+    const {id}= req.params;
+    if(!id){
+      return res.status(400).json({error:"Recipe ID is missing"});
+    }
+const recipe= await Recipe.findById(id);
+if(!recipe) {
+  console.error("Recipe not found for deletion:", id);
+  return res.status(404).json({ error: "Recipe not found" });
+}
 
+if(recipe.userId.toString() !== userId){
+  return res.status(403).json({error:"You are not authorized to delete this recipe"});
+}
+
+await Recipe.findByIdAndDelete(id);
+return res.status(200).json({success:true, message:"Recipe deleted successfully"});
+
+  } catch (error) {
+    console.error("Error deleting recipe:", error);
+  }
+}
 const getRecipe = async (req, res) => {
   try {
    const {id}= req.params;
@@ -228,4 +249,4 @@ const query = String(req.query.query || "").trim();
   }
 };
 
-export { createSingleRecipePage,getmoreIdeasRecipe, getRecipe,getAllRecipes,getFixedRecipes,getExploreRecipes ,searchRecipes,getCategoryRecipes, getCuisineRecipes};
+export { createSingleRecipePage, deleteSingleRcipe,  getmoreIdeasRecipe, getRecipe,getAllRecipes,getFixedRecipes,getExploreRecipes ,searchRecipes,getCategoryRecipes, getCuisineRecipes};

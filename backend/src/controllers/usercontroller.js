@@ -1,8 +1,12 @@
 import { User } from "../models/usermodel.js";
 import { Recipe } from "../models/singleRecipemodel.js";
 import jwt from "jsonwebtoken";
+import nodemailer from "nodemailer";
+import crypto from "crypto";
 import bcrypt from "bcrypt";
-import { UserRelationship } from "../models/userRelationmodel.js";
+// import { UserRelationship } from "../models/userRelationmodel.js";
+import cloudinary from "../utils/cloudinary.js";
+
 const registerUser = async (req, res) => {
   try {
     const { userName, email, password, fullName } = req.body;
@@ -162,9 +166,10 @@ const logoutUser= async (req,res)=>{
         
         res.cookie("refreshToken", "",{
 httpOnly: true,
-secure: process.env.NODE_ENV === "production",  // Ensure data transfer over HTTPS
+secure: process.env.NODE_ENV === "production",  // Ensuing  data transfer over HTTPS
       sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
-expiresIn: new Date(0)
+expires: new Date(0)//replacing the existing cookie with an empty value and setting its expiration date in the past.
+//A browser automatically removes expired cookies, so it deletes it immediately
 
         } );
 
@@ -192,9 +197,10 @@ const getUserDetails = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-     const followersCount = await UserRelationship.countDocuments({ following: user._id });
+      //followersCount = await UserRelationship.countDocuments({ following: user._id });
 
-     const followingCount = await UserRelationship.countDocuments({ follower: user._id });
+      //followingCount = await UserRelationship.countDocuments({ follower: user._id });
+
     const recipes = await Recipe.find({ userId: user._id });
 
     res.status(200).json({
@@ -203,15 +209,88 @@ const getUserDetails = async (req, res) => {
         userName: user.userName,
         fullName: user.fullName,
         bio: user.bio,
+        profileImage: user.profileImage,
         
       },
       recipes,
-       followingCount,
-       followersCount
+        // followingCount,
+        // followersCount
     });
   } catch (error) {
     res.status(500).json({ message: "Something went wrong", error: error.message });
   }
 };
 
-export { registerUser, loginUser ,logoutUser,getUserDetails};
+// controllers/authController.js
+
+const updateUserProfile = async (req, res) => {
+  try {
+    const userId = req.user ? req.user.userId : null;
+    const { userName, fullName, bio } = req.body;
+
+    let updateData = { fullName, bio };
+
+    // Only update username if provided and different
+    if (userName) {
+      // Check if username is already taken by another user
+      const existingUser = await User.findOne({ 
+        userName, 
+        _id: { $ne: userId } //notequal
+      });
+      
+      if (existingUser) {
+        return res.status(400).json({
+          success: false,
+          message: "Username is already taken"
+        });
+      }
+      updateData.userName = userName;
+    }
+
+    if (req.file && req.file.path) {
+      updateData.profileImage = req.file.path;
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { $set: updateData },
+      { new: true, runValidators: true }
+    ).select("-password -refreshToken");
+
+    return res.status(200).json({
+      success: true,
+      message: "Profile updated successfully",
+      user: updatedUser,
+    });
+  } catch (error) {
+    console.error("Update profile error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to update profile",
+    });
+  }
+};
+
+export const forgotPassword = async (req, res) => {
+  const { email } = req.body;
+
+  const user = await User.findOne({ email });
+  if (!user) return res.status(404).json({ message: "Email not found" });
+
+  const otp = Math.floor(100000 + Math.random() * 900000); // 6-digit
+
+  user.resetOTP = otp;
+  user.resetOTPExpire = Date.now() + 5 * 60 * 1000; // 5 min
+  await user.save();
+
+  await transporter.sendMail({
+    to: user.email,
+    subject: "Your Password Reset OTP",
+    html: `<h1>Your OTP is: ${otp}</h1>`
+  });
+
+  res.json({ success: true, message: "OTP sent to email" });
+};
+
+
+export { registerUser, loginUser ,logoutUser,getUserDetails,updateUserProfile};

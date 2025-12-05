@@ -8,7 +8,7 @@ import { login, setUser } from "../../redux/slices/authSlice";
 import { FcGoogle } from "react-icons/fc";
 import { FaEye, FaEyeSlash, FaArrowRight } from "react-icons/fa";
 import { motion } from "framer-motion";
-
+import Forgot_password from "./Forgot_password";
 const Login = () => {
   const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
@@ -184,7 +184,7 @@ const res = await api.post("/api/v1/users/login",         {
                 <label className="text-sm font-medium text-gray-700" htmlFor="password">
                   Password
                 </label>
-                <Link to="#" className="text-sm text-indigo-600 hover:text-indigo-800 transition-colors">
+                <Link to="/forgot_password" className="text-sm text-indigo-600 hover:text-indigo-800 transition-colors">
                   Forgot password?
                 </Link>
               </div>

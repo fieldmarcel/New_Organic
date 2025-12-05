@@ -21,6 +21,10 @@ const userSchema = new Schema(
       type: String,
       default: "",
     },
+    profileImage: {
+      type: String,
+      default: "https://cdn.pixabay.com/photo/2016/07/13/13/59/men-chef-1514505_640.png", // default avatar
+    },
     password: {
       type: String, // not no.
       required: [true, "Password is required"],

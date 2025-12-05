@@ -24,6 +24,7 @@ import Cuisine from "./pages/Cuisine";
 import Explore from "./components/Explore";
 import MoreIdeas from "./components/MoreIdeas";
 import LiveFeed from "./components/LiveFeed";
+import Forgot_password from "./pages/Forgot_password";
 const App = () => {
   return (
     <div className="">
@@ -63,6 +64,7 @@ const App = () => {
             <Route path="/userSettings" element={<><UserSettings /><Footer /></>} />
             <Route path="/subCategory/:subCategory" element={<><SubCategory /><Footer /></>} />
             <Route path="/cuisine/:cuisine" element={<><Cuisine /><Footer /></>} />
+            <Route path="/Forgot_password" element={<><Forgot_password /><Footer /></>} />
 
           </Routes>
         </BrowserRouter>

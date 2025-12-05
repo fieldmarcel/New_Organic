@@ -1,11 +1,11 @@
 import { Router } from "express";
-import { createSingleRecipePage, getRecipe,searchRecipes,getAllRecipes,getFixedRecipes,getmoreIdeasRecipe ,getCategoryRecipes,getCuisineRecipes,getExploreRecipes} from "../controllers/singleRecipecontroller.js";
+import { createSingleRecipePage, deleteSingleRcipe, getRecipe,searchRecipes,getAllRecipes,getFixedRecipes,getmoreIdeasRecipe ,getCategoryRecipes,getCuisineRecipes,getExploreRecipes} from "../controllers/singleRecipecontroller.js";
 import { upload } from "../middlewares/multer.middleware.js";
 import { authenticateToken } from "../middlewares/auth.middleware.js"
 const router = Router();
 // router.post("/", upload.single("image"), createRecipe);
 
-router.post("/", upload.single("image"), createSingleRecipePage);
+router.post("/", authenticateToken ,upload.single("image"), createSingleRecipePage);
 
 // router.post("/", authenticateToken, upload.single("image"), createSingleRecipePage);
 // he authenticateToken middleware is strategically placed before createSingleRecipePage to ensure that 
@@ -23,6 +23,9 @@ router.get("/cuisine/:cuisine", getCuisineRecipes);
 
 router.get("/:id", getRecipe); 
 
+
+//deleting recipe
+router.delete("/:id", authenticateToken, deleteSingleRcipe);
 
 // router.get("/filters", getRecipeFilters);
 

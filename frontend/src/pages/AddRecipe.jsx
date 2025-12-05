@@ -1,4 +1,6 @@
 import { useState } from "react";
+import axios from "axios";
+
 import {
   BookOpen,
   Clock,
@@ -12,12 +14,11 @@ import {
   Plus,
   ChefHat,
 } from "lucide-react";
-
+import toast from "react-hot-toast";
 export default function AddRecipe() {
   const [recipe, setRecipe] = useState({
     subCategory: "",
     title: "",
-    rating: "",
     description: "",
     cookTime: "",
     readyIn: "",
@@ -44,12 +45,49 @@ export default function AddRecipe() {
       setRecipe({ ...recipe, [name]: value });
     }
   };
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  const token = localStorage.getItem("token");
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    console.log("Recipe submitted:", recipe);
-    alert("Recipe submitted successfully! 🎉");
-  };
+  if (!token) {
+    toast.error("Please login to publish recipe");
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append("title", recipe.title);
+  formData.append("subCategory", recipe.subCategory);
+  formData.append("description", recipe.description);
+  formData.append("cookTime", recipe.cookTime);
+  formData.append("readyIn", recipe.readyIn);
+  formData.append("serving", recipe.serving);
+  formData.append("ingredients", recipe.ingredients);
+  formData.append("nutrition", JSON.stringify(recipe.nutrition));
+  formData.append("cuisine", recipe.cuisine);
+  formData.append("mealType", recipe.mealType);
+  formData.append("steps", recipe.steps);
+  formData.append("image", recipe.imageFile); // important key must match multer field
+
+  try {
+    const res = await axios.post(
+      `${import.meta.env.VITE_BASE_URL}/api/v1/recipes`,
+      formData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+
+    toast.success("Recipe submitted successfully!");
+    console.log(res.data);
+  } catch (error) {
+    console.error("Submit error:", error);
+    toast.error(error.response?.data?.message || "Failed to submit recipe");
+  }
+};
+
 
   return (
     <div className="min-h-screen  py-12 px-4">
@@ -100,21 +138,7 @@ export default function AddRecipe() {
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2 flex items-center gap-2">
-                  <Heart className="w-4 h-4 text-red-500" />
-                  Rating (0-5)
-                </label>
-                <input
-                  name="rating"
-                  type="number"
-                  step="0.1"
-                  placeholder="4.5"
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent bg-slate-50"
-                  required
-                />
-              </div>
+              
 
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-slate-700 mb-2">

@@ -73,11 +73,11 @@ const Signup = () => {
           </div>
           <div className="flex gap-6">
             <div className="p-3 bg-white/10 backdrop-blur-sm rounded-lg">
-              <p className="text-sm font-medium">10,000+</p>
+              <p className="text-sm font-medium">10,00+</p>
               <p className="text-xs opacity-80">Recipes</p>
             </div>
             <div className="p-3 bg-white/10 backdrop-blur-sm rounded-lg">
-              <p className="text-sm font-medium">50,000+</p>
+              <p className="text-sm font-medium">50,00+</p>
               <p className="text-xs opacity-80">Users</p>
             </div>
             <div className="p-3 bg-white/10 backdrop-blur-sm rounded-lg">
