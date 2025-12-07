@@ -271,7 +271,16 @@ const updateUserProfile = async (req, res) => {
   }
 };
 
-export const forgotPassword = async (req, res) => {
+
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.SMTP_EMAIL,
+    pass: process.env.SMTP_PASS
+  }
+});
+
+ const forgotPassword = async (req, res) => {
   const { email } = req.body;
 
   const user = await User.findOne({ email });
@@ -293,4 +302,26 @@ export const forgotPassword = async (req, res) => {
 };
 
 
-export { registerUser, loginUser ,logoutUser,getUserDetails,updateUserProfile};
+ const resetPasswordWithOTP = async (req, res) => {
+  const { email, otp, newPassword } = req.body;
+
+  const user = await User.findOne({ email });
+  if (!user) return res.status(404).json({ message: "User not found" });
+
+  if (user.resetOTP !== Number(otp))
+    return res.status(400).json({ message: "Invalid OTP" });
+
+  if (user.resetOTPExpire < Date.now())
+    return res.status(400).json({ message: "OTP expired" });
+
+  user.password = await bcrypt.hash(newPassword, 10);
+  user.resetOTP = undefined;
+  user.resetOTPExpire = undefined;
+
+  await user.save();
+
+  res.json({ success: true, message: "Password reset successful" });
+};
+
+
+export { registerUser, loginUser ,logoutUser,getUserDetails,updateUserProfile,forgotPassword,resetPasswordWithOTP};

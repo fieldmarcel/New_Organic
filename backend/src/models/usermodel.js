@@ -35,6 +35,9 @@ const userSchema = new Schema(
     accessToken: {
       type: String,
     },
+    resetOTP: Number,
+resetOTPExpire: Date,
+
   },
   { timestamps: true }
 );
