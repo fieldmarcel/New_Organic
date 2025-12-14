@@ -1,14 +1,14 @@
-import React, { useEffect, useState ,useRef} from "react";
+
+import React, { useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import { Checkbox } from "@/components/ui/checkbox";
 import DynamicRatingStars from "./DynamicRatingStars.jsx";
 import StaticRating from "./StaticRating.jsx";
-import { 
-  Clock, Users, Star, ChefHat, Check, Download, Share2, 
+import {
+  Clock, Users, Star, ChefHat, Check, Download, Share2,
   Bookmark, BookMarked, MoreVertical, User, Heart, Flame, Droplets, Wheat, Timer, Utensils
 } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,10 +18,9 @@ import {
 import axios from "axios";
 import Comments from "./Comments";
 import { Link } from "react-router-dom";
-
 const Recipe = () => {
-const dataString= localStorage.getItem("data");
-  const loggedUser= dataString ? JSON.parse(dataString):null;
+  const dataString = localStorage.getItem("data");
+  const loggedUser = dataString ? JSON.parse(dataString) : null;
 
   const { id } = useParams();
   const [recipe, setRecipe] = useState(null);
@@ -30,19 +29,18 @@ const dataString= localStorage.getItem("data");
   const [checkedIngredients, setCheckedIngredients] = useState([]);
   const [checkedSteps, setCheckedSteps] = useState([]);
   const [isBookmarked, setIsBookmarked] = useState(false);
-const [ratingInfo, setRatingInfo] = useState({
-        averageRating: 0,
-        ratingCount: 0,
-    });
-    const ratingSectionRef= useRef(null);
+  const [ratingInfo, setRatingInfo] = useState({
+    averageRating: 0,
+    ratingCount: 0,
+  });
+  const ratingSectionRef = useRef(null);
 
-const scrolltoRatingSection =()=>{
+  const scrolltoRatingSection = () => {
+    if (ratingSectionRef.current) {
+      ratingSectionRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+  }
 
-if(ratingSectionRef.current){
-  ratingSectionRef.current?.scrollIntoView({behavior:"smooth"});
-
-}
-}
   const handlebookmark = async (e) => {
     e.preventDefault();
     try {
@@ -63,7 +61,7 @@ if(ratingSectionRef.current){
       const accessToken = localStorage.getItem("token");
       const recipeId = id;
 
-      console.log("Sending payload:", { userId, recipeId }); 
+      console.log("Sending payload:", { userId, recipeId });
 
       if (!accessToken) {
         console.error("No access token found. User might not be logged in.");
@@ -85,31 +83,32 @@ if(ratingSectionRef.current){
     } catch (error) {
       console.error("Recipe already Bookmarked:", error);
       toast.error(error.response?.data?.message || "Recipe already bookmarked");
-      
+
       if (error.response) {
         console.error("Server responded with:", error.response.data);
       }
     }
   }
-const handleRatingUpdate = ({ averageRating, ratingCount, userRating }) => {
-        setRatingInfo(prev => ({
-            ...prev,
-            averageRating: averageRating,
-            ratingCount: ratingCount,
-             initialUserRating: userRating  
-            // The DynamicRatingStars component will handle updating the userVote internally
-        }));
-    };
+
+  const handleRatingUpdate = ({ averageRating, ratingCount, userRating }) => {
+    setRatingInfo(prev => ({
+      ...prev,
+      averageRating: averageRating,
+      ratingCount: ratingCount,
+      initialUserRating: userRating
+    }));
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
         const { data } = await axios.get(import.meta.env.VITE_BASE_URL + `/api/v1/recipes/${id}`);
-     setRecipe(data.recipe);
-      setRatingInfo({
-        averageRating: data.averageRating,
-        ratingCount: data.ratingCount,
-        initialUserRating: data.userRating
-      });
+        setRecipe(data.recipe);
+        setRatingInfo({
+          averageRating: data.averageRating,
+          ratingCount: data.ratingCount,
+          initialUserRating: data.userRating
+        });
       } catch (err) {
         setError("Error fetching recipe details");
       }
@@ -120,13 +119,13 @@ const handleRatingUpdate = ({ averageRating, ratingCount, userRating }) => {
   }, [id]);
 
   const toggleIngredient = (index) => {
-    setCheckedIngredients(prev => 
+    setCheckedIngredients(prev =>
       prev.includes(index) ? prev.filter(i => i !== index) : [...prev, index]
     );
   };
 
   const toggleStep = (index) => {
-    setCheckedSteps(prev => 
+    setCheckedSteps(prev =>
       prev.includes(index) ? prev.filter(i => i !== index) : [...prev, index]
     );
   };
@@ -139,7 +138,7 @@ const handleRatingUpdate = ({ averageRating, ratingCount, userRating }) => {
       </div>
     </div>
   );
-  
+
   if (!recipe) return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50">
       <div className="text-center">
@@ -148,7 +147,7 @@ const handleRatingUpdate = ({ averageRating, ratingCount, userRating }) => {
       </div>
     </div>
   );
-  
+
   if (error) return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50">
       <div className="text-center">
@@ -157,10 +156,18 @@ const handleRatingUpdate = ({ averageRating, ratingCount, userRating }) => {
     </div>
   );
 
-
-
   const userName = recipe.userId ? recipe.userId.userName : "admin";
 
+  // ---------------------------------------------------------
+  // FIX: Process steps to handle comma-separated strings
+  // ---------------------------------------------------------
+  const processedSteps = recipe.steps
+    ? (Array.isArray(recipe.steps) 
+        ? recipe.steps // If it's already an array, use it as is
+        : recipe.steps.split(',')) // If it's a string, split by comma
+        .map(step => step.trim()) // Remove extra spaces
+        .filter(step => step !== "") // Remove empty steps
+    : [];
 
   return (
     <div className="min-h-screen ">
@@ -176,13 +183,12 @@ const handleRatingUpdate = ({ averageRating, ratingCount, userRating }) => {
                 className="w-full h-64 md:h-80 object-cover"
               />
               <div className="absolute top-4 right-4 flex gap-2">
-                <button 
+                <button
                   onClick={handlebookmark}
-                  className={`p-2.5 rounded-xl shadow-lg transition-all duration-300 ${
-                    isBookmarked 
-                      ? "bg-emerald-600 text-white" 
+                  className={`p-2.5 rounded-xl shadow-lg transition-all duration-300 ${isBookmarked
+                      ? "bg-emerald-600 text-white"
                       : "bg-white/95 text-emerald-600 hover:bg-emerald-600 hover:text-white"
-                  }`}
+                    }`}
                 >
                   {isBookmarked ? <BookMarked size={20} /> : <Bookmark size={20} />}
                 </button>
@@ -201,7 +207,7 @@ const handleRatingUpdate = ({ averageRating, ratingCount, userRating }) => {
                     <span className="font-medium">{userName}</span>
                   </Link>
                 </div>
-                
+
                 <DropdownMenu>
                   <DropdownMenuTrigger className="p-2 hover:bg-slate-100 rounded-lg transition-colors focus:outline-none">
                     <MoreVertical size={20} className="text-slate-600" />
@@ -256,11 +262,11 @@ const handleRatingUpdate = ({ averageRating, ratingCount, userRating }) => {
                     <Star className="w-5 h-5 text-amber-600" />
                   </div>
                   <div>
-                    <StaticRating 
-  averageRating={Number(ratingInfo.averageRating) || 0}
-  ratingCount={Number(ratingInfo.ratingCount) || 0}
-  onClick={scrolltoRatingSection}
-/>
+                    <StaticRating
+                      averageRating={Number(ratingInfo.averageRating) || 0}
+                      ratingCount={Number(ratingInfo.ratingCount) || 0}
+                      onClick={scrolltoRatingSection}
+                    />
 
 
                   </div>
@@ -306,26 +312,24 @@ const handleRatingUpdate = ({ averageRating, ratingCount, userRating }) => {
                     onClick={() => toggleIngredient(index)}
                   >
                     <div
-                      className={`w-5 h-5 border-2 rounded-md flex items-center justify-center flex-shrink-0 transition-all ${
-                        checkedIngredients.includes(index)
+                      className={`w-5 h-5 border-2 rounded-md flex items-center justify-center flex-shrink-0 transition-all ${checkedIngredients.includes(index)
                           ? "bg-emerald-600 border-emerald-600"
                           : "border-slate-300"
-                      }`}
+                        }`}
                     >
                       {checkedIngredients.includes(index) && (
-                        <Checkbox 
-  checked={checkedIngredients.includes(index)}
-  onCheckedChange={() => toggleIngredient(index)}
-  className="w-5 h-5"
-/>
+                        <Checkbox
+                          checked={checkedIngredients.includes(index)}
+                          onCheckedChange={() => toggleIngredient(index)}
+                          className="w-5 h-5"
+                        />
                       )}
                     </div>
                     <span
-                      className={`text-sm transition-all ${
-                        checkedIngredients.includes(index) 
-                          ? "line-through text-slate-400" 
+                      className={`text-sm transition-all ${checkedIngredients.includes(index)
+                          ? "line-through text-slate-400"
                           : "text-slate-700"
-                      }`}
+                        }`}
                     >
                       {ingredient}
                     </span>
@@ -342,19 +346,20 @@ const handleRatingUpdate = ({ averageRating, ratingCount, userRating }) => {
                 <Timer className="w-5 h-5 text-emerald-600" />
                 Instructions
               </h2>
+              
+              {/* FIX: Map over processedSteps instead of recipe.steps */}
               <ol className="space-y-3">
-                {recipe.steps.map((step, index) => (
+                {processedSteps.map((step, index) => (
                   <li
                     key={index}
                     className="flex gap-3 p-3 rounded-lg hover:bg-slate-50 cursor-pointer transition-colors"
                     onClick={() => toggleStep(index)}
                   >
                     <div
-                      className={`w-7 h-7 border-2 rounded-lg flex items-center justify-center flex-shrink-0 transition-all ${
-                        checkedSteps.includes(index)
+                      className={`w-7 h-7 border-2 rounded-lg flex items-center justify-center flex-shrink-0 transition-all ${checkedSteps.includes(index)
                           ? "bg-emerald-600 border-emerald-600"
                           : "border-slate-300"
-                      }`}
+                        }`}
                     >
                       {checkedSteps.includes(index) ? (
                         <Check className="w-4 h-4 text-white" strokeWidth={3} />
@@ -363,11 +368,10 @@ const handleRatingUpdate = ({ averageRating, ratingCount, userRating }) => {
                       )}
                     </div>
                     <span
-                      className={`text-sm leading-relaxed transition-all ${
-                        checkedSteps.includes(index) 
-                          ? "line-through text-slate-400" 
+                      className={`text-sm leading-relaxed transition-all ${checkedSteps.includes(index)
+                          ? "line-through text-slate-400"
                           : "text-slate-700"
-                      }`}
+                        }`}
                     >
                       {step}
                     </span>
@@ -394,7 +398,7 @@ const handleRatingUpdate = ({ averageRating, ratingCount, userRating }) => {
                 <p className="text-xs text-slate-600 font-medium">Calories</p>
               </div>
             </div>
-            
+
             <div className="flex items-center gap-4 p-4 bg-gradient-to-br from-red-50 to-red-100 rounded-xl border border-red-200">
               <div className="w-12 h-12 rounded-full bg-white shadow-sm flex items-center justify-center">
                 <Droplets className="w-6 h-6 text-red-600" />
@@ -404,7 +408,7 @@ const handleRatingUpdate = ({ averageRating, ratingCount, userRating }) => {
                 <p className="text-xs text-slate-600 font-medium">Protein</p>
               </div>
             </div>
-            
+
             <div className="flex items-center gap-4 p-4 bg-gradient-to-br from-amber-50 to-amber-100 rounded-xl border border-amber-200">
               <div className="w-12 h-12 rounded-full bg-white shadow-sm flex items-center justify-center">
                 <Wheat className="w-6 h-6 text-amber-600" />
@@ -414,7 +418,7 @@ const handleRatingUpdate = ({ averageRating, ratingCount, userRating }) => {
                 <p className="text-xs text-slate-600 font-medium">Carbs</p>
               </div>
             </div>
-            
+
             <div className="flex items-center gap-4 p-4 bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-xl border border-yellow-200">
               <div className="w-12 h-12 rounded-full bg-white shadow-sm flex items-center justify-center">
                 <Star className="w-6 h-6 text-yellow-600" />
@@ -427,67 +431,67 @@ const handleRatingUpdate = ({ averageRating, ratingCount, userRating }) => {
           </div>
         </div>
 
- {/* Comments & Rating Section */}
-<div ref= {ratingSectionRef} className="relative bg-gradient-to-br from-white via-slate-50 to-white rounded-3xl shadow-xl p-8 mt-10 border border-slate-100 overflow-hidden">
-  
-  {/* Decorative background elements */}
-  <div className="absolute top-0 right-0 w-64 h-64 bg-purple-100 rounded-full blur-3xl opacity-20 -z-10" />
-  <div className="absolute bottom-0 left-0 w-48 h-48 bg-blue-100 rounded-full blur-3xl opacity-20 -z-10" />
-  
-  <div className="flex flex-col lg:flex-row justify-between gap-8 relative z-10">
-    
-    {/* Comments */}
-    <div className="flex-1">
-      <div className="flex items-center gap-3 mb-6">
-        <div className="w-1 h-8 bg-gradient-to-b from-blue-500 to-purple-500 rounded-full" />
-        <h3 className="text-2xl font-bold text-slate-900 tracking-tight">
-          Comments & Feedback
-        </h3>
-      </div>
-      <Comments />
-    </div>
+        {/* Comments & Rating Section */}
+        <div ref={ratingSectionRef} className="relative bg-gradient-to-br from-white via-slate-50 to-white rounded-3xl shadow-xl p-8 mt-10 border border-slate-100 overflow-hidden">
 
-    {/* Rating Box */}
-    <div className="relative flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm rounded-2xl p-8 w-full lg:w-96 shadow-lg border border-slate-200/60 lg:sticky lg:top-24 lg:self-start">
-      
-      {/* Decorative accent */}
-      <div className="absolute -top-3 -right-3 w-24 h-24 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full blur-2xl opacity-20" />
-      
-      {loggedUser && recipe?.userId?._id === loggedUser?.id ? (
-        <div className="flex flex-col items-center gap-3 py-4">
-          <div className="p-4 bg-red-50 rounded-full">
-            <svg 
-              className="w-8 h-8 text-red-500" 
-              fill="none" 
-              stroke="currentColor" 
-              viewBox="0 0 24 24"
-            >
-              <path 
-                strokeLinecap="round" 
-                strokeLinejoin="round" 
-                strokeWidth={2} 
-                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" 
-              />
-            </svg>
+          {/* Decorative background elements */}
+          <div className="absolute top-0 right-0 w-64 h-64 bg-purple-100 rounded-full blur-3xl opacity-20 -z-10" />
+          <div className="absolute bottom-0 left-0 w-48 h-48 bg-blue-100 rounded-full blur-3xl opacity-20 -z-10" />
+
+          <div className="flex flex-col lg:flex-row justify-between gap-8 relative z-10">
+
+            {/* Comments */}
+            <div className="flex-1">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-1 h-8 bg-gradient-to-b from-blue-500 to-purple-500 rounded-full" />
+                <h3 className="text-2xl font-bold text-slate-900 tracking-tight">
+                  Comments & Feedback
+                </h3>
+              </div>
+              <Comments />
+            </div>
+
+            {/* Rating Box */}
+            <div className="relative flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm rounded-2xl p-8 w-full lg:w-96 shadow-lg border border-slate-200/60 lg:sticky lg:top-24 lg:self-start">
+
+              {/* Decorative accent */}
+              <div className="absolute -top-3 -right-3 w-24 h-24 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full blur-2xl opacity-20" />
+
+              {loggedUser && recipe?.userId?._id === loggedUser?.id ? (
+                <div className="flex flex-col items-center gap-3 py-4">
+                  <div className="p-4 bg-red-50 rounded-full">
+                    <svg
+                      className="w-8 h-8 text-red-500"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                      />
+                    </svg>
+                  </div>
+                  <span className="text-sm font-semibold text-red-600 text-center px-4 py-2 bg-red-50 border border-red-200 rounded-full">
+                    You cannot rate your own recipe
+                  </span>
+                </div>
+              ) : (
+                <DynamicRatingStars
+                  recipeId={id}
+                  currentAvgRating={Number(ratingInfo.averageRating) || 0}
+                  ratingCount={Number(ratingInfo.ratingCount) || 1}
+                  initialUserRating={Number(ratingInfo.initialUserRating) || 0}
+                  onRatingUpdate={handleRatingUpdate}
+                />
+              )}
+            </div>
           </div>
-          <span className="text-sm font-semibold text-red-600 text-center px-4 py-2 bg-red-50 border border-red-200 rounded-full">
-            You cannot rate your own recipe
-          </span>
         </div>
-      ) : (
-        <DynamicRatingStars
-          recipeId={id}
-          currentAvgRating={Number(ratingInfo.averageRating) || 0}
-          ratingCount={Number(ratingInfo.ratingCount) || 1}
-          initialUserRating={Number(ratingInfo.initialUserRating) || 0}
-          onRatingUpdate={handleRatingUpdate}
-        />
-      )}
-    </div>
-  </div>
-</div>
 
-    </div>
+      </div>
 
     </div>
   );

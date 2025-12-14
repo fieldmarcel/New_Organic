@@ -3,9 +3,9 @@ import { bookmarkRecipe,getBookmarkedRecipes } from "../controllers/bookmarkCont
 import { authenticateToken } from "../middlewares/auth.middleware.js"
 import {optionalAuthenticateToken}  from "../middlewares/optionalauth.middleware.js"
 import { registerUser,loginUser ,logoutUser,getUserDetails,updateUserProfile,forgotPassword,resetPasswordWithOTP} from "../controllers/usercontroller.js";
-import { followUser,unfollowUser } from "../controllers/followUserController.js";
+// import { followUser,unfollowUser } from "../controllers/followUserController.js";
 import { upload } from "../middlewares/multer.middleware.js";
-
+import { cacheMiddleware } from "../middlewares/cache.middleware.js";
 const router = Router();
 router.route("/register").post(registerUser);
 router.route("/login").post(loginUser);
@@ -25,8 +25,8 @@ router.route("/logout").post(logoutUser);
 
 router.post("/bookmarks", authenticateToken, bookmarkRecipe); // Requires authentication
 // router.delete("/bookmarks", authenticateToken, unBookMarkRecipe); // Requires authentication
-router.get("/:userName/bookmarks", getBookmarkedRecipes); 
-router.get("/:userName", optionalAuthenticateToken, getUserDetails);
+router.get("/:userName/bookmarks", cacheMiddleware, getBookmarkedRecipes); 
+router.get("/:userName", optionalAuthenticateToken,cacheMiddleware, getUserDetails);
 
 
 

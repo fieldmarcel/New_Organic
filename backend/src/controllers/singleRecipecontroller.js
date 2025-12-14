@@ -1,5 +1,6 @@
 import { Recipe } from "../models/singleRecipemodel.js";
 import { Rating } from "../models/ratingModel.js";
+import redisClient from "../utils/redisClient.js";
 
 const createSingleRecipePage = async (req, res) => {
   try {
@@ -29,7 +30,9 @@ const createSingleRecipePage = async (req, res) => {
     if (typeof ingredients === "string") {
       ingredients = ingredients.split(",").map((i) => i.trim());
     }
-
+if (typeof steps === "string") {
+steps = steps.split(",").map((s) => s.trim());
+}
     if (typeof steps === "string") {
       steps = steps.split("\n").map((s) => s.trim());
     }
@@ -71,6 +74,15 @@ const createSingleRecipePage = async (req, res) => {
       userId,
       isPrePopulated: !userId,
     });
+      // Invalidate cache (important!) after recipe creation
+  
+await redisClient.del("/recipes");     // all recipes
+await redisClient.del("/recipes/fixed");
+await redisClient.del("/recipes/explore");
+await redisClient.del("/recipes/moreideas");
+await redisClient.del("/recipes/search");  // wildcard delete recommended
+await redisClient.del(`/recipes/category/${subCategory}`);
+await redisClient.del(`/recipes/cuisine/${cuisine}`);
 
     return res.status(201).json({
       success: true,
@@ -105,6 +117,14 @@ if(recipe.userId.toString() !== userId){
 }
 
 await Recipe.findByIdAndDelete(id);
+await redisClient.del(`/recipes/${id}`);
+await redisClient.del("/recipes");
+await redisClient.del("/recipes/fixed");
+await redisClient.del("/recipes/explore");
+await redisClient.del("/recipes/moreideas");
+await redisClient.del(`/recipes/category/${recipe.subCategory}`);
+await redisClient.del(`/recipes/cuisine/${recipe.cuisine}`);
+
 return res.status(200).json({success:true, message:"Recipe deleted successfully"});
 
   } catch (error) {
@@ -248,5 +268,79 @@ const query = String(req.query.query || "").trim();
     res.status(500).json({ error: "Search is failed  " });
   }
 };
+const updateSingleRecipe = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user ? req.user.userId : null;
 
-export { createSingleRecipePage, deleteSingleRcipe,  getmoreIdeasRecipe, getRecipe,getAllRecipes,getFixedRecipes,getExploreRecipes ,searchRecipes,getCategoryRecipes, getCuisineRecipes};
+    if (!id) return res.status(400).json({ error: "Recipe ID is missing" });
+
+    // 1. Find existing recipe to check ownership
+    const existingRecipe = await Recipe.findById(id);
+    if (!existingRecipe) {
+      return res.status(404).json({ error: "Recipe not found" });
+    }
+
+    // 2. Authorization Check
+    if (existingRecipe.userId.toString() !== userId) {
+      return res.status(403).json({ error: "You are not authorized to edit this recipe" });
+    }
+
+    // 3. Prepare Update Data
+    let updates = { ...req.body };
+
+    // Handle Image: Only update if a new file is uploaded via Cloudinary/Multer
+    if (req.file && req.file.path) {
+      updates.image = req.file.path;
+    }
+
+    // Handle Data Formatting (FormData sends arrays/objects as strings)
+    if (typeof updates.ingredients === "string") {
+      updates.ingredients = updates.ingredients.split(",").map((i) => i.trim());
+    }
+    if (typeof updates.steps === "string") {
+      // Split by newline or custom delimiter depending on how you send it
+      updates.steps = updates.steps.includes("\n") 
+        ? updates.steps.split("\n").map((s) => s.trim()) 
+        : updates.steps.split(",").map((s) => s.trim());
+    }
+    if (typeof updates.nutrition === "string") {
+      try {
+        updates.nutrition = JSON.parse(updates.nutrition);
+      } catch (e) {
+        console.error("Error parsing nutrition JSON", e);
+      }
+    }
+
+    // 4. Update Database
+    // { new: true } returns the updated document
+    const updatedRecipe = await Recipe.findByIdAndUpdate(id, updates, {
+      new: true, 
+      runValidators: true,
+    });
+await redisClient.del(`/recipes/${id}`);
+await redisClient.del("/recipes");
+await redisClient.del("/recipes/fixed");
+await redisClient.del("/recipes/explore");
+await redisClient.del("/recipes/moreideas");
+await redisClient.del(`/recipes/category/${existingRecipe.subCategory}`);
+await redisClient.del(`/recipes/cuisine/${existingRecipe.cuisine}`);
+    return res.status(200).json({
+      success: true,
+      message: "Recipe updated successfully ✅",
+      recipe: updatedRecipe,
+    });
+
+  } catch (error) {
+    console.error("Error updating recipe:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Error updating recipe",
+      error: error.message,
+    });
+  }
+};
+
+
+
+export { createSingleRecipePage, deleteSingleRcipe,  getmoreIdeasRecipe, getRecipe,getAllRecipes,getFixedRecipes,getExploreRecipes ,searchRecipes,getCategoryRecipes, getCuisineRecipes,updateSingleRecipe};

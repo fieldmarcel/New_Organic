@@ -146,8 +146,8 @@ const SearchPage = () => {
                 <span className="text-sm">Curated Collection</span>
               </div>
               <div className="flex items-center space-x-1">
-                <Star className="w-4 h-4" />
-                <span className="text-sm">Top Rated</span>
+                {/* <Star className="w-4 h-4" /> */}
+                {/* <span className="text-sm">Top Rated</span> */}
               </div>
             </div>
           </div>

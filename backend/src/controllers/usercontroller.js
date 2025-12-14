@@ -257,6 +257,10 @@ const updateUserProfile = async (req, res) => {
       { new: true, runValidators: true }
     ).select("-password -refreshToken");
 
+    
+// Clear profile cache
+await redisClient.del(`/users/${updatedUser.userName}`);
+
     return res.status(200).json({
       success: true,
       message: "Profile updated successfully",

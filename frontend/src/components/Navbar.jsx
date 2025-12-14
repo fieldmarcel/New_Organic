@@ -142,7 +142,7 @@ userdetails();
                   <DropdownMenuItem className="p-0 hover:bg-emerald-50 rounded-lg">
                     <Link to="/userSettings" className="flex items-center gap-3 hover:bg-green-400 rounded-full w-full px-4 py-2.5 text-gray-700 hover:text-white">
                       <Settings className="h-5 w-5 text-emerald-500 hover:text-white " />
-                      <span>Settings</span>
+                      <span> User Settings</span>
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator className="bg-gray-100 hover:text-white" />

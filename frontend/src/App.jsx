@@ -26,6 +26,7 @@ import MoreIdeas from "./components/MoreIdeas";
 import LiveFeed from "./components/LiveFeed";
 import Forgot_password from "./pages/Forgot_password";
 import Otp from "./pages/Otp.jsx";
+import RecipeSettings from "./pages/RecipeSettings";
 const App = () => {
   return (
     <div className="">
@@ -62,6 +63,8 @@ const App = () => {
             <Route path="/search" element={<><Searchpage /><Footer /></>} />
             <Route path="/profile/:userName" element={<><Profile /><Footer /></>} />
             <Route path="/addRecipe" element={<><AddRecipe /><Footer /></>} />
+                        <Route path="/recipe_settings/:id" element={<><RecipeSettings/><Footer/></>} />
+
             <Route path="/userSettings" element={<><UserSettings /><Footer /></>} />
             <Route path="/subCategory/:subCategory" element={<><SubCategory /><Footer /></>} />
             <Route path="/cuisine/:cuisine" element={<><Cuisine /><Footer /></>} />

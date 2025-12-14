@@ -1,4 +1,5 @@
 import { Comment } from "../models/commentModel.js";
+import redisClient from "../utils/redisClient.js";
 
 const createComment = async (req, res) => {
     const { id } = req.params; // Recipe ID from URL params
@@ -14,14 +15,18 @@ const createComment = async (req, res) => {
       if (!userId) {
         return res.status(400).json({ error: "User ID is required" });
       }
-  
+
+      // Invalidate cache for this recipe's comments
+    await redisClient.del(`/comments/${recipeId}`);
+
       // Create the comment
       const newComment = await Comment.create({
         recipeId: id,
         comment,
         userId,
       });
-  
+
+
       // Populate the userId field before returning the response
       const populatedComment = await Comment.findById(newComment._id).populate({
         path: "userId",
@@ -73,7 +78,9 @@ const getCommentsByRecipe = async (req, res) => {
       if (!comment) {
         return res.status(404).json({ error: "Comment not found" });
       }
-  
+      const recipeId = comment.recipeId;
+  await redisClient.del(`/comments/${recipeId}`);
+
       // Delete the comment
       await Comment.deleteOne({ _id: commentId }); // Use deleteOne or findByIdAndDelete
       res.status(204).end(); // No content to send back
